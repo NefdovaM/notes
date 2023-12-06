@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "NoteTitle",
+    "body": "NoteBody",
+    "editAt": "06.12.2023 21:14"
+  },
+  {
+    "id": 2,
+    "title": "NoteTitle2",
+    "body": "NoteBody2",
+    "editAt": "01.12.2023 19:14"
+  }
+]
