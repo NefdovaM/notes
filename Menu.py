@@ -1,50 +1,94 @@
+from NotesRepository import *
 import datetime
-
-from NotesController import *
 
 MENU_EXIT = "0"
 MENU_SHOW_ALL = "1"
-MENU_FIND_BY_DATE = "2"
+MENU_NEW_NOTE = "2"
+MENU_FIND_BY_DATE = "3"
 
-NODE_ACTION_DELETE = "1"
-NODE_ACTION_EDIT = "2"
+NOTE_SHOW = "1"
+NOTE_ACTION_EDIT = "2"
+NOTE_ACTION_DELETE = "3"
+MENU_PREVIOUS_STEP = "0"
 
 
 def startMainMenu():
     while True:
-        print('Введите ваш выбор: ')
-        print(MENU_EXIT + " для выхода")
-        print(MENU_SHOW_ALL + " для вывода списка заметок")
-        print(MENU_FIND_BY_DATE + " поиск по дате")
-        userInput = input()
-        if userInput == MENU_EXIT:
+        print('Введите необходимый пункт меню: ')
+        print("Выберите " + MENU_EXIT + " для выхода")
+        print(MENU_SHOW_ALL + " Все заметки")
+        print(MENU_NEW_NOTE + " Создать новую заметку")
+        print(MENU_FIND_BY_DATE + " Поиск заметки по дате")
+        user_input = input()
+        if user_input == MENU_EXIT:
             break
-        if userInput == MENU_SHOW_ALL:
-            nodes = get_all_notes()
-            print("Выбуруте заметку")
-            for currentNode in nodes:
-                print(currentNode.id.__str__() + ") " + currentNode.title)
-            id = int(input())
-            if not is_node_exist(id):
-                print("нету такой заметки")
-                break
+        if user_input == MENU_SHOW_ALL:
+            while True:
+                notes = get_all_notes()
+                print("Выберите необходимую заметку. Для возврата в главное меню нажмите " + MENU_PREVIOUS_STEP)
+                for currentNote in notes:
+                    print(
+                        currentNote.id.__str__() + " заголовок: " + currentNote.title + ", содержимое: " + currentNote.body)
+                id = int(input())
+                if id.__str__() == MENU_PREVIOUS_STEP:
+                    break
+                if not is_note_exist(id):
+                    print("Такой заметки нет")
+                    continue
 
-            print("Что дулать")
-            print(NODE_ACTION_DELETE + ") удалить")
-            print(NODE_ACTION_EDIT + "2) обновить")
-            action = int(input())
-            do_action_with_node(get_node(id), action)
+                print("Что необходимо сделать? Для возврата нажмите " + MENU_PREVIOUS_STEP)
+                print(NOTE_SHOW + " Показать заметку")
+                print(NOTE_ACTION_EDIT + " Изменить заметку")
+                print(NOTE_ACTION_DELETE + " Удалить заметку")
+                action = input()
+                if action == MENU_PREVIOUS_STEP:
+                    continue
+                do_action_with_note(get_note(id), action)
 
-        elif userInput == MENU_FIND_BY_DATE:
-            print("введите дату dd-mm-yyyy")
+        elif user_input == MENU_FIND_BY_DATE:
+            print("Введите дату в формате dd.mm.yyyy")
             date = input()
-            day, month, year = map(int, date.split('-'))
+            day, month, year = map(int, date.split('.'))
             inputted_date = datetime.date(year, month, day)
-            get_by_date(inputted_date)
-
+            find_notes = get_by_date(inputted_date)
+            if len(find_notes) == 0:
+                print("Нет заметки от такой даты")
+            else:
+                print("Найдено " + len(find_notes).__str__() + " заметка(ок)")
+                for note in find_notes:
+                    print_note(note)
+        elif user_input == MENU_NEW_NOTE:
+            print("Введите заголовок")
+            title = input()
+            print("Введите содержимое заметки")
+            body = input()
+            create_note(title, body)
+            print("Заметка создана")
+            safe_file()
+    safe_file()
     print("Хорошего дня ")
 
 
-def do_action_with_node(node: Node, action: int):
-    if action.__str__() == NODE_ACTION_DELETE:
-        print("вы удалили " + drop_node(node.id).title)
+def do_action_with_note(note: Note, action: str):
+    if action == NOTE_ACTION_DELETE:
+        print("вы удалили " + drop_note(note.id).title)
+        safe_file()
+    elif action == NOTE_ACTION_EDIT:
+        print("Введите новый заголовок")
+        title = input()
+        print("Введите новое содержимое заметки")
+        body = input()
+        print("Сохранить заметку? Y или N")
+        safe = str(input())
+        if safe == "Y":
+            update_note(note.id, title, body)
+            safe_file()
+            print("Заметка сохранена")
+        else:
+            print("Заметка не сохранена")
+    elif action == NOTE_SHOW:
+        print_note(note)
+
+
+def print_note(note: Note):
+    print("Заголовок: " + note.title + " содержимое: " + note.body + " дата изменения: " + note.get_formatted_date())
